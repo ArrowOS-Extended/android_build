@@ -821,8 +821,6 @@ function lunch()
     if [[ -n "${CHECK_MU_CONFIG:-}" ]]; then
       check_mu_config
     fi
-
-    arrow_prebuilts
 }
 
 unset COMMON_LUNCH_CHOICES_CACHE
@@ -1997,13 +1995,6 @@ validate_current_shell
 source_vendorsetup
 addcompletions
 
-function arrow_prebuilts() {
-    if [ -z ${ARROW_PREBUILTS} ]; then
-        bash $ANDROID_BUILD_TOP/packages/apps/ArrowPrebuilts/ArrowPrebuilts.sh
-        export ARROW_PREBUILTS=1
-    fi
-}
-
 function generate_keys() {
     local email="$1"
     local key_password="$2"
@@ -2228,4 +2219,3 @@ function ota_sign() {
 
 export ANDROID_BUILD_TOP=$(gettop)
 export android_key_path="$ANDROID_BUILD_TOP/vendor/arrow/signing/keys"
-
