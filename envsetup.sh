@@ -821,6 +821,8 @@ function lunch()
     if [[ -n "${CHECK_MU_CONFIG:-}" ]]; then
       check_mu_config
     fi
+
+    prepare_keybox
 }
 
 unset COMMON_LUNCH_CHOICES_CACHE
@@ -1994,6 +1996,32 @@ function showcommands() {
 validate_current_shell
 source_vendorsetup
 addcompletions
+
+function prepare_keybox() {
+    local cargo_bin="$ANDROID_BUILD_TOP/prebuilts/rust/linux-x86/1.73.0c/bin/cargo"
+    local pkg_name="keybox_parser"
+    local keybox_path="$ANDROID_BUILD_TOP/vendor/arrow-priv"
+    local pkg_dir="$ANDROID_BUILD_TOP/external/rust/crates/$pkg_name"
+
+    export CARGO_BUILD_RUSTC="$ANDROID_BUILD_TOP/prebuilts/rust/linux-x86/1.73.0c/bin/rustc"
+    export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER="$ANDROID_BUILD_TOP/prebuilts/clang/host/linux-x86/clang-r416183b/bin/clang"
+    export KEYBOX_PATH="$keybox_path"
+
+    local yellow="\033[1;33m"   # Yellow
+    local green="\033[1;32m"    # Green
+    local reset="\033[0m"       # Reset
+
+    if [[ -f "$keybox_path/keybox.xml" ]]; then
+        echo -e "${green}Keybox file found at $keybox_path/keybox.xml${reset}"
+        echo "Preparing keybox..."
+    else
+        echo -e "${yellow}Keybox file not found at $keybox_path/keybox.xml${reset}"
+    fi
+
+    rm -f "$pkg_dir/src/ec_constants.rs"  # Use -f to avoid error if file doesn't exist
+    $cargo_bin build --release --manifest-path "$pkg_dir/Cargo.toml" --target-dir "$pkg_dir/target" -q
+    rm -rf "$pkg_dir/target"
+}
 
 function generate_keys() {
     local email="$1"
